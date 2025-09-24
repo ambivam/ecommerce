@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <!-- E-Commerce Application Context Configuration for Apache Tomcat -->
+    
+    <!-- Application metadata -->
+    <Parameter name="app.name" value="E-Commerce Backend" override="false"/>
+    <Parameter name="app.version" value="1.0.0" override="false"/>
+    <Parameter name="app.environment" value="production" override="false"/>
+    
+    <!-- Database configuration parameters -->
+    <Parameter name="db.url" value="jdbc:postgresql://localhost:5432/ecommerce" override="false"/>
+    <Parameter name="db.username" value="ecommerce_user" override="false"/>
+    <Parameter name="db.password" value="ecommerce123" override="false"/>
+    
+    <!-- JWT configuration -->
+    <Parameter name="jwt.secret" value="mySecretKey123456789012345678901234567890" override="false"/>
+    <Parameter name="jwt.expiration" value="86400000" override="false"/>
+    <Parameter name="jwt.issuer" value="ecommerce-app" override="false"/>
+    
+    <!-- Security settings -->
+    <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+           allow="127\.0\.0\.1|::1|0:0:0:0:0:0:0:1" />
+    
+    <!-- Session configuration -->
+    <Manager pathname="" />
+    
+    <!-- Resource configuration for connection pooling (alternative to HikariCP) -->
+    <!--
+    <Resource name="jdbc/ecommerceDB"
+              auth="Container"
+              type="javax.sql.DataSource"
+              maxTotal="20"
+              maxIdle="10"
+              maxWaitMillis="10000"
+              username="ecommerce_user"
+              password="ecommerce123"
+              driverClassName="org.postgresql.Driver"
+              url="jdbc:postgresql://localhost:5432/ecommerce"
+              validationQuery="SELECT 1"
+              testOnBorrow="true" />
+    -->
+</Context>

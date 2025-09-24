@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample Apache Tomcat server.xml configuration for E-Commerce application
+  
+  This file shows the recommended configuration for running the E-Commerce
+  application on Apache Tomcat. Copy relevant sections to your Tomcat's
+  conf/server.xml file.
+-->
+<Server port="8005" shutdown="SHUTDOWN">
+  <Listener className="org.apache.catalina.startup.VersionLoggerListener" />
+  <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+  <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+  <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+  <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
+
+  <GlobalNamingResources>
+    <Resource name="UserDatabase" auth="Container"
+              type="org.apache.catalina.UserDatabase"
+              description="User database that can be updated and saved"
+              factory="org.apache.catalina.users.MemoryUserDatabaseFactory"
+              pathname="conf/tomcat-users.xml" />
+  </GlobalNamingResources>
+
+  <Service name="Catalina">
+    <!-- HTTP Connector -->
+    <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443"
+               maxThreads="200"
+               minSpareThreads="10"
+               enableLookups="false"
+               acceptCount="100"
+               compression="on"
+               compressionMinSize="2048"
+               noCompressionUserAgents="gozilla, traviata"
+               compressableMimeType="text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json" />
+
+    <!-- HTTPS Connector (uncomment and configure for production) -->
+    <!--
+    <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+               maxThreads="150" SSLEnabled="true">
+        <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
+        <SSLHostConfig>
+            <Certificate certificateKeystoreFile="conf/localhost-rsa.jks"
+                         type="RSA" />
+        </SSLHostConfig>
+    </Connector>
+    -->
+
+    <Engine name="Catalina" defaultHost="localhost">
+      <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.UserDatabaseRealm"
+               resourceName="UserDatabase"/>
+      </Realm>
+
+      <Host name="localhost" appBase="webapps"
+            unpackWARs="true" autoDeploy="true">
+
+        <!-- E-Commerce Application Context -->
+        <Context path="/ecommerce" 
+                 docBase="ecommerce-backend"
+                 reloadable="true"
+                 crossContext="true">
+          
+          <!-- Application parameters -->
+          <Parameter name="app.name" value="E-Commerce Backend" override="false"/>
+          <Parameter name="app.version" value="1.0.0" override="false"/>
+          <Parameter name="app.environment" value="production" override="false"/>
+          
+          <!-- Security valve for admin endpoints -->
+          <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+                 allow="127\.0\.0\.1|::1|0:0:0:0:0:0:0:1" />
+        </Context>
+
+        <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
+               prefix="localhost_access_log" suffix=".txt"
+               pattern="%h %l %u %t &quot;%r&quot; %s %b" />
+      </Host>
+    </Engine>
+  </Service>
+</Server>

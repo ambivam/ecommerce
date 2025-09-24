@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sample tomcat-users.xml for E-Commerce application deployment
+  
+  This file should be placed in your Tomcat's conf/ directory.
+  It defines users and roles for Tomcat manager application.
+-->
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+  
+  <!-- Define roles for Tomcat manager -->
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <role rolename="manager-jmx"/>
+  <role rolename="manager-status"/>
+  <role rolename="admin-gui"/>
+  <role rolename="admin-script"/>
+  
+  <!-- Define users with roles -->
+  <!-- Change these credentials in production! -->
+  <user username="admin" 
+        password="admin123" 
+        roles="manager-gui,manager-script,manager-jmx,manager-status,admin-gui,admin-script"/>
+  
+  <user username="manager" 
+        password="manager123" 
+        roles="manager-gui,manager-script,manager-status"/>
+  
+  <!-- Application-specific roles -->
+  <role rolename="ecommerce-admin"/>
+  <role rolename="ecommerce-user"/>
+  
+  <user username="ecommerce-admin" 
+        password="ecommerce-admin123" 
+        roles="ecommerce-admin"/>
+</tomcat-users>
