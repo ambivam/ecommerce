@@ -29,6 +29,15 @@ public class UserController {
     }
 
     /**
+     * Handle preflight OPTIONS request for CORS
+     */
+    @OPTIONS
+    @Path("/register")
+    public Response registerOptions() {
+        return Response.ok().build();
+    }
+
+    /**
      * User registration
      */
     @POST
@@ -79,6 +88,15 @@ public class UserController {
                     .entity("{\"error\":\"Registration failed\"}")
                     .build();
         }
+    }
+
+    /**
+     * Handle preflight OPTIONS request for CORS
+     */
+    @OPTIONS
+    @Path("/login")
+    public Response loginOptions() {
+        return Response.ok().build();
     }
 
     /**
