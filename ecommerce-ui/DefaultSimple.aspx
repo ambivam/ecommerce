@@ -9,7 +9,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#">E-Commerce Store</a>
+            <a class="navbar-brand" href="/ecommerce-ui/">E-Commerce Store</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="ProductsSimple.aspx">Products</a>

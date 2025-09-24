@@ -13,10 +13,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">E-Commerce Store</a>
+            <a class="navbar-brand" href="/ecommerce-ui/">E-Commerce Store</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="/ecommerce-ui/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="ProductsSimple.aspx">Products</a>
@@ -73,7 +73,7 @@
                                         Session["AuthToken"] = loginResult["token"];
                                         Session["UserInfo"] = loginResult["user"];
                                         
-                                        message = string.Format("Login successful! Welcome {0}! <a href='/'>Go to Homepage</a>", 
+                                        message = string.Format("Login successful! Welcome {0}! <a href='/ecommerce-ui/'>Go to Homepage</a>", 
                                                               loginResult["user"]["firstName"]);
                                         messageClass = "alert-success";
                                     }

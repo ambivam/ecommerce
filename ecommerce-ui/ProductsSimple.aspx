@@ -9,10 +9,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/">E-Commerce Store</a>
+            <a class="navbar-brand" href="/ecommerce-ui/">E-Commerce Store</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link" href="/ecommerce-ui/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="LoginWorking.aspx">Login</a>
