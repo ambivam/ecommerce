@@ -596,21 +596,36 @@ Before starting, download the following:
 
 1. **Access the application**
    - Open browser: `http://localhost/ecommerce-ui`
-   - Should show the home page with products
+   - Should show the home page with application status dashboard
+   - ✅ **Working URLs:**
+     - Homepage: `http://localhost/ecommerce-ui/` (redirects to DefaultSimple.aspx)
+     - Test page: `http://localhost/ecommerce-ui/test.html`
 
 2. **Test user registration**
-   - Navigate to: `http://localhost/ecommerce-ui/Account/Register.aspx`
-   - Create a new user account
+   - Navigate to: `http://localhost/ecommerce-ui/RegisterWorking.aspx`
+   - Fill out the form with unique credentials:
+     ```
+     First Name: John
+     Last Name: Test
+     Username: johntest2025 (must be unique)
+     Email: johntest2025@example.com
+     Password: test123
+     Confirm Password: test123
+     ```
+   - Click "Create Account"
+   - Should show success message with login link
 
 3. **Test user login**
-   - Navigate to: `http://localhost/ecommerce-ui/Account/Login.aspx`
+   - Navigate to: `http://localhost/ecommerce-ui/LoginSimple.aspx`
    - Login with demo credentials:
      - Username: `admin`, Password: `admin123`
      - Username: `johndoe`, Password: `user123`
+   - Or use your newly created account
 
 4. **Test product browsing**
-   - Navigate to: `http://localhost/ecommerce-ui/Products.aspx`
+   - Navigate to: `http://localhost/ecommerce-ui/ProductsSimple.aspx`
    - Test search and filtering functionality
+   - Should display products from the backend API
 
 ### Step 3: End-to-End Testing
 
@@ -653,14 +668,34 @@ Solution:
 
 #### 3. ASP.NET Configuration Issues
 
-**Problem**: Cannot connect to backend API
+**Problem**: "ERR_TOO_MANY_REDIRECTS" or "This page isn't working"
 ```
 Solution:
-1. Verify API base URL in Web.config (should be http://localhost:8080/ecommerce-backend/api)
-2. Check if Tomcat is running and accessible
-3. Test API endpoints directly with curl
-4. Check CORS configuration in backend
-5. Verify application is deployed and started in Tomcat manager
+1. ✅ FIXED: Use working pages:
+   - Homepage: http://localhost/ecommerce-ui/ (works)
+   - Registration: http://localhost/ecommerce-ui/RegisterWorking.aspx
+   - Login: http://localhost/ecommerce-ui/LoginSimple.aspx
+   - Products: http://localhost/ecommerce-ui/ProductsSimple.aspx
+
+2. If still having issues:
+   - Check IIS permissions:
+     icacls "C:\ecommerce\ecommerce-ui" /grant IIS_IUSRS:(OI)(CI)F
+   - Reset IIS: iisreset /restart
+   - Test simple page: http://localhost/ecommerce-ui/test.html
+```
+
+**Problem**: "Registration Failed: Failed to fetch"
+```
+Solution:
+✅ FIXED: Use server-side registration (RegisterWorking.aspx)
+- This bypasses CORS issues by calling API from server-side
+- No more client-side JavaScript API calls
+- Direct server-to-server communication works reliably
+
+If using client-side registration (not recommended):
+1. Verify API base URL in Web.config
+2. Check CORS configuration in Java backend
+3. Ensure OPTIONS requests are handled properly
 ```
 
 #### 4. Build Issues

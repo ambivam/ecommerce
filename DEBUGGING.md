@@ -4,9 +4,25 @@
 
 This comprehensive debugging guide covers troubleshooting for a full-stack e-commerce application with:
 - **Frontend**: ASP.NET Web Forms (.NET Framework 4.8) on IIS
-- **Backend**: Java 8 with JAX-RS (Jersey) on Apache Tomcat
+- **Backend**: Java 8 with JAX-RS (Jersey) on Apache Tomcat 9.0+
 - **Database**: PostgreSQL 17
 - **Build Tools**: Maven 3.8+
+
+## ✅ **WORKING CONFIGURATION (Updated 2025-09-24)**
+
+**Confirmed Working URLs:**
+- Homepage: `http://localhost/ecommerce-ui/` → DefaultSimple.aspx
+- Registration: `http://localhost/ecommerce-ui/RegisterWorking.aspx`
+- Login: `http://localhost/ecommerce-ui/LoginSimple.aspx`
+- Products: `http://localhost/ecommerce-ui/ProductsSimple.aspx`
+- API Test: `http://localhost/ecommerce-ui/test-register.html`
+
+**Key Fixes Applied:**
+- ✅ Server-side registration (bypasses CORS issues)
+- ✅ IIS permissions configured correctly
+- ✅ Web.config authentication mode set to "None"
+- ✅ Default documents pointing to working pages
+- ✅ Backend OPTIONS handlers for CORS preflight requests
 
 ## Table of Contents
 1. [Quick Diagnostic Commands](#quick-diagnostic-commands)
@@ -48,19 +64,21 @@ tasklist | findstr -i postgres
 
 ### Application Health Check
 ```cmd
-# Test frontend
-curl http://localhost/ecommerce-ui
-curl http://localhost/ecommerce-ui/Default.aspx
+# ✅ Test frontend (WORKING URLs)
+curl http://localhost/ecommerce-ui/
+curl http://localhost/ecommerce-ui/test.html
+curl http://localhost/ecommerce-ui/DefaultSimple.aspx
 
-# Test backend API (check both possible ports)
+# ✅ Test backend API
 curl http://localhost:8080/ecommerce-backend/api/products
-curl http://localhost:8081/ecommerce-backend/api/products
-
-# Test specific API endpoints
 curl http://localhost:8080/ecommerce-backend/api/categories
-curl http://localhost:8080/ecommerce-backend/api/users/health
 
-# Test database connection
+# ✅ Test registration endpoint
+curl -X POST http://localhost:8080/ecommerce-backend/api/users/register ^
+     -H "Content-Type: application/json" ^
+     -d "{\"username\":\"testuser2025\",\"email\":\"test2025@example.com\",\"password\":\"test123\",\"firstName\":\"Test\",\"lastName\":\"User\"}"
+
+# ✅ Test database connection
 psql -U ecommerce_user -d ecommerce -c "SELECT COUNT(*) FROM products;"
 psql -U ecommerce_user -d ecommerce -c "SELECT version();"
 
@@ -89,6 +107,66 @@ curl -s http://localhost:8080/ecommerce-backend/api/products | echo "API Respons
 
 echo "5. Testing frontend..."
 curl -s http://localhost/ecommerce-ui | echo "Frontend Response: %ERRORLEVEL%"
+```
+
+## 🚨 **RESOLVED ISSUES (Reference)**
+
+### Issue 1: "ERR_TOO_MANY_REDIRECTS" on Default.aspx
+
+**Problem**: Original Default.aspx caused infinite redirect loops
+
+**Root Cause**: 
+- Forms authentication enabled in Web.config
+- Complex code-behind logic with session/token handling
+- API calls failing and causing redirects
+
+**✅ SOLUTION APPLIED**:
+```xml
+<!-- Web.config fix -->
+<authentication mode="None" />
+<defaultDocument>
+  <files>
+    <add value="DefaultSimple.aspx" />
+  </files>
+</defaultDocument>
+```
+
+**Working Alternative**: Created `DefaultSimple.aspx` with client-side API calls
+
+### Issue 2: "Registration Failed: Failed to fetch" 
+
+**Problem**: Client-side JavaScript couldn't call backend API
+
+**Root Cause**: CORS (Cross-Origin Resource Sharing) issues
+- Browser blocking API calls from frontend to backend
+- Preflight OPTIONS requests not handled properly
+
+**✅ SOLUTION APPLIED**:
+1. **Server-side registration**: Created `RegisterWorking.aspx`
+   - ASP.NET server calls API directly (no CORS issues)
+   - More secure approach
+   - Reliable server-to-server communication
+
+2. **Backend CORS fixes** (for client-side calls):
+   ```java
+   // Added OPTIONS handlers in UserController
+   @OPTIONS
+   @Path("/register")
+   public Response registerOptions() {
+       return Response.ok().build();
+   }
+   ```
+
+### Issue 3: IIS Permissions and Configuration
+
+**Problem**: HTTP 500.19 errors, access denied
+
+**✅ SOLUTION APPLIED**:
+```cmd
+# Fixed IIS permissions
+icacls "C:\ecommerce\ecommerce-ui" /grant IIS_IUSRS:(OI)(CI)F
+icacls "C:\ecommerce\ecommerce-ui" /grant "IIS AppPool\DefaultAppPool":(OI)(CI)F
+iisreset /restart
 ```
 
 ## Critical Issues (Application Won't Start)
@@ -1478,14 +1556,14 @@ rmdir /s /q "%USERPROFILE%\.m2\repository"
 # Stop all services
 iisreset /stop
 taskkill /f /im java.exe
-net stop postgresql-x64-14
+net stop postgresql-x64-17
 
 # Clear temporary files
 del /q /s "%TEMP%\*"
 del /q /s "%WINDOWS%\Microsoft.NET\Framework64\v4.0.30319\Temporary ASP.NET Files\*"
 
 # Restart services
-net start postgresql-x64-14
+net start postgresql-x64-17
 iisreset /start
 
 # Rebuild and restart application
@@ -1493,6 +1571,47 @@ cd C:\ecommerce\ecommerce-backend
 mvn clean package
 mvn tomcat7:run
 ```
+
+## 🎯 **QUICK TROUBLESHOOTING CHECKLIST**
+
+### ✅ **Application Working? Test These URLs:**
+1. `http://localhost/ecommerce-ui/` - Homepage
+2. `http://localhost/ecommerce-ui/RegisterWorking.aspx` - Registration
+3. `http://localhost/ecommerce-ui/LoginSimple.aspx` - Login
+4. `http://localhost:8080/ecommerce-backend/api/products` - Backend API
+
+### 🔧 **If Not Working, Run These Commands:**
+```cmd
+# 1. Check services
+netstat -an | findstr ":80 :8080 :5432"
+tasklist | findstr "java postgres"
+
+# 2. Fix IIS permissions (if needed)
+icacls "C:\ecommerce\ecommerce-ui" /grant IIS_IUSRS:(OI)(CI)F
+iisreset /restart
+
+# 3. Restart backend (if needed)
+cd C:\ecommerce\ecommerce-backend
+mvn tomcat7:run
+
+# 4. Test registration with curl
+curl -X POST http://localhost:8080/ecommerce-backend/api/users/register ^
+     -H "Content-Type: application/json" ^
+     -d "{\"username\":\"test2025\",\"email\":\"test2025@example.com\",\"password\":\"test123\",\"firstName\":\"Test\",\"lastName\":\"User\"}"
+```
+
+### 📋 **Success Indicators:**
+- ✅ Homepage shows application status dashboard
+- ✅ Registration creates account and shows success message
+- ✅ Login works with demo credentials or new account
+- ✅ Products page displays items from backend API
+- ✅ Backend API returns JSON data for products
+
+### 🚨 **If Still Not Working:**
+1. Check INSTALL.md for complete setup instructions
+2. Verify all prerequisites are installed
+3. Check log files in Tomcat logs directory
+4. Run system health check commands above
 
 ### Database Recovery
 ```sql

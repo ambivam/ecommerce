@@ -47,7 +47,7 @@
                         
                         <hr>
                         <div class="text-center">
-                            <p>Don't have an account? <a href="RegisterSimple.aspx">Register here</a></p>
+                            <p>Don't have an account? <a href="RegisterWorking.aspx">Register here</a></p>
                         </div>
                         
                         <div class="alert alert-info">
