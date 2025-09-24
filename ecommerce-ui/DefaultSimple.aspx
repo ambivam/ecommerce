@@ -12,7 +12,10 @@
             <a class="navbar-brand" href="#">E-Commerce Store</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="Account/Login.aspx">Login</a>
+                    <a class="nav-link" href="ProductsSimple.aspx">Products</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="LoginSimple.aspx">Login</a>
                 </li>
             </ul>
         </div>
@@ -39,8 +42,8 @@
                 </div>
                 
                 <div class="mt-4">
-                    <a href="Products.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
-                    <a href="Account/Login.aspx" class="btn btn-outline-secondary btn-lg">Login</a>
+                    <a href="ProductsSimple.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
+                    <a href="LoginSimple.aspx" class="btn btn-outline-secondary btn-lg">Login</a>
                 </div>
             </div>
         </div>
