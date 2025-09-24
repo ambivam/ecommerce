@@ -15,7 +15,7 @@
                     <a class="nav-link" href="ProductsSimple.aspx">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="LoginSimple.aspx">Login</a>
+                    <a class="nav-link" href="LoginWorking.aspx">Login</a>
                 </li>
             </ul>
         </div>
@@ -43,7 +43,7 @@
                 
                 <div class="mt-4">
                     <a href="ProductsSimple.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
-                    <a href="LoginSimple.aspx" class="btn btn-outline-secondary btn-lg">Login</a>
+                    <a href="LoginWorking.aspx" class="btn btn-outline-secondary btn-lg">Login</a>
                 </div>
             </div>
         </div>
