@@ -382,6 +382,13 @@
             // Update add to cart button in modal
             const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
             modalAddToCartBtn.onclick = () => {
+                // Check login status first
+                if (!isLoggedIn) {
+                    closeModal(); // Close product details modal first
+                    showLoginRequiredModal(); // Show login required modal
+                    return;
+                }
+                
                 const originalText = modalAddToCartBtn.innerHTML;
                 const originalClass = modalAddToCartBtn.className;
                 
@@ -661,14 +668,14 @@
         function showLoginRequiredModal() {
             // Create modal HTML
             const modalHtml = `
-                <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+                <div class="modal fade show" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="false" style="display: block;">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title" id="loginRequiredModalLabel">
                                     <i class="fas fa-sign-in-alt text-primary"></i> Login Required
                                 </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                <button type="button" class="btn-close" onclick="closeLoginModal()" aria-label="Close"></button>
                             </div>
                             <div class="modal-body text-center">
                                 <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
@@ -676,7 +683,7 @@
                                 <p class="text-muted">You need to be logged in to start shopping and add items to your cart.</p>
                             </div>
                             <div class="modal-footer justify-content-center">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
                                 <a href="LoginWorking.aspx" class="btn btn-primary">
                                     <i class="fas fa-sign-in-alt"></i> Login Now
                                 </a>
@@ -684,6 +691,7 @@
                         </div>
                     </div>
                 </div>
+                <div class="modal-backdrop fade show" id="loginModalBackdrop" onclick="closeLoginModal()"></div>
             `;
             
             // Remove existing modal if any
@@ -691,13 +699,34 @@
             if (existingModal) {
                 existingModal.remove();
             }
+            const existingBackdrop = document.getElementById('loginModalBackdrop');
+            if (existingBackdrop) {
+                existingBackdrop.remove();
+            }
             
             // Add modal to page
             document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.body.classList.add('modal-open');
             
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
-            modal.show();
+            // Add keyboard support (Escape key)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.getElementById('loginRequiredModal')) {
+                    closeLoginModal();
+                }
+            });
+        }
+        
+        function closeLoginModal() {
+            const modal = document.getElementById('loginRequiredModal');
+            const backdrop = document.getElementById('loginModalBackdrop');
+            
+            if (modal) {
+                modal.remove();
+            }
+            if (backdrop) {
+                backdrop.remove();
+            }
+            document.body.classList.remove('modal-open');
         }
 
         // Load cart count and products data on page load
