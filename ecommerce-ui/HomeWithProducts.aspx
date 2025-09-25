@@ -18,7 +18,7 @@
             <a class="navbar-brand" href="/ecommerce-ui/">TechMart</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="ProductsSimple.aspx">Products</a>
+                    <a class="nav-link" href="ProductsWorking.aspx">Products</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="LoginWorking.aspx">Login</a>
@@ -138,7 +138,7 @@
                             <p><strong>What you can do:</strong></p>
                             <ul>
                                 <li>Try refreshing the page in a few moments</li>
-                                <li>Browse our <a href='ProductsSimple.aspx' class='alert-link'>full product catalog</a></li>
+                                <li>Browse our <a href='ProductsWorking.aspx' class='alert-link'>full product catalog</a></li>
                                 <li>Contact our support team if the issue persists</li>
                             </ul>
                             <button class='btn btn-outline-primary btn-sm' onclick='location.reload()'>
@@ -152,7 +152,7 @@
                 <%= productsHtml %>
                 
                 <div class="mt-4">
-                    <a href="ProductsSimple.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
+                    <a href="ProductsWorking.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
                     <a href="LoginWorking.aspx" class="btn btn-outline-secondary btn-lg">Login</a>
                 </div>
             </div>
