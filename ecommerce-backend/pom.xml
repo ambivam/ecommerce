@@ -149,12 +149,17 @@
                 </configuration>
             </plugin>
             
+            <!-- Maven WAR Plugin with Java 8 compatibility -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.2.3</version>
                 <configuration>
                     <webXml>src\main\webapp\WEB-INF\web.xml</webXml>
+                    <packagingExcludes>
+                        **/module-info.class,
+                        **/META-INF/versions/**
+                    </packagingExcludes>
                 </configuration>
             </plugin>
             
@@ -167,7 +172,7 @@
                     <url>http://localhost:8080/manager/text</url>
                     <server>tomcat</server>
                     <path>/ecommerce-backend</path>
-                    <port>8081</port>
+                    <port>8080</port>
                     <username>admin</username>
                     <password>admin</password>
                 </configuration>

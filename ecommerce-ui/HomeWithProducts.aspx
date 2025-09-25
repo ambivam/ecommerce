@@ -1,4 +1,8 @@
 <%@ Page Language="C#" CodePage="65001" %>
+<%@ Import Namespace="System.Net" %>
+<%@ Import Namespace="System.Text" %>
+<%@ Import Namespace="System.IO" %>
+<%@ Import Namespace="System.Web.Script.Serialization" %>
 
 <!DOCTYPE html>
 <html>
@@ -79,14 +83,73 @@
                 </div>
                 
                 <h3>Featured Products</h3>
-                <div id="productsContainer">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
+                <%
+                string productsHtml = "";
+                try
+                {
+                    using (var client = new System.Net.WebClient())
+                    {
+                        client.Headers.Add("User-Agent", "TechMart-Frontend/1.0");
+                        string url = "http://localhost:8080/ecommerce-backend/api/products";
+                        string response = client.DownloadString(url);
+                        
+                        var serializer = new JavaScriptSerializer();
+                        var products = serializer.Deserialize<dynamic[]>(response);
+                        
+                        if (products != null && products.Length > 0)
+                        {
+                            productsHtml = "<div class='row'>";
+                            for (int i = 0; i < Math.Min(4, products.Length); i++)
+                            {
+                                var product = products[i];
+                                productsHtml += string.Format(@"
+                                    <div class='col-md-3 mb-3'>
+                                        <div class='card h-100'>
+                                            <div class='card-body'>
+                                                <h5 class='card-title'>{0}</h5>
+                                                <p class='card-text'>{1}</p>
+                                                <div class='d-flex justify-content-between align-items-center'>
+                                                    <span class='h5 text-primary'>${2}</span>
+                                                    <small class='text-muted'>Stock: {3}</small>
+                                                </div>
+                                                <div class='mt-2'>
+                                                    <button class='btn btn-primary btn-sm'>Add to Cart</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ", product["name"], product["description"], product["price"], product["stockQuantity"]);
+                            }
+                            productsHtml += "</div>";
+                        }
+                        else
+                        {
+                            productsHtml = "<div class='alert alert-info'>No products available at the moment.</div>";
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    productsHtml = string.Format(@"
+                        <div class='alert alert-warning'>
+                            <h5>&#x26A0; Products Temporarily Unavailable</h5>
+                            <p>We're experiencing technical difficulties loading our product catalog.</p>
+                            <p><strong>Error:</strong> {0}</p>
+                            <p><strong>What you can do:</strong></p>
+                            <ul>
+                                <li>Try refreshing the page in a few moments</li>
+                                <li>Browse our <a href='ProductsSimple.aspx' class='alert-link'>full product catalog</a></li>
+                                <li>Contact our support team if the issue persists</li>
+                            </ul>
+                            <button class='btn btn-outline-primary btn-sm' onclick='location.reload()'>
+                                &#x1F504; Refresh Page
+                            </button>
                         </div>
-                        <p class="mt-2">Loading our amazing products...</p>
-                    </div>
-                </div>
+                    ", ex.Message);
+                }
+                %>
+                
+                <%= productsHtml %>
                 
                 <div class="mt-4">
                     <a href="ProductsSimple.aspx" class="btn btn-primary btn-lg">Browse All Products</a>
@@ -95,52 +158,5 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // Load products via JavaScript to avoid server-side issues
-        fetch('http://localhost:8080/ecommerce-backend/api/products')
-            .then(response => response.json())
-            .then(products => {
-                const container = document.getElementById('productsContainer');
-                if (products && products.length > 0) {
-                    let html = '<div class="row">';
-                    products.slice(0, 4).forEach(product => {
-                        html += `
-                            <div class="col-md-3 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h5 class="card-title">${product.name}</h5>
-                                        <p class="card-text">$${product.price}</p>
-                                        <small class="text-muted">Stock: ${product.stockQuantity}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<p class="alert alert-info">No products available.</p>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading products:', error);
-                document.getElementById('productsContainer').innerHTML = `
-                    <div class="alert alert-warning">
-                        <h5>&#x26A0; Products Temporarily Unavailable</h5>
-                        <p>We're experiencing technical difficulties loading our product catalog.</p>
-                        <p><strong>What you can do:</strong></p>
-                        <ul>
-                            <li>Try refreshing the page in a few moments</li>
-                            <li>Browse our <a href="ProductsSimple.aspx" class="alert-link">full product catalog</a></li>
-                            <li>Contact our support team if the issue persists</li>
-                        </ul>
-                        <button class="btn btn-outline-primary btn-sm" onclick="location.reload()">
-                            &#x1F504; Refresh Page
-                        </button>
-                    </div>
-                `;
-            });
-    </script>
 </body>
 </html>
