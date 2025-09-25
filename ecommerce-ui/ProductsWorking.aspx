@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - TechMart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
     <%
@@ -235,8 +236,11 @@
     </div>
 
     <script>
-        const authToken = '<%= Session["AuthToken"] != null ? Session["AuthToken"].ToString() : "" %>';
-        const isLoggedIn = '<%= isUserLoggedIn.ToString().ToLower() %>' === 'true';
+        // Global variables
+        let isLoggedIn = <%= isUserLoggedIn.ToString().ToLower() %>;
+        let authToken = '<%= Session["AuthToken"] %>';
+        let userInfo = '<%= Session["UserInfo"] %>';
+        let productsData = []; // Store products data globally
 
         function addToCart(productId) {
             if (!isLoggedIn) {
@@ -303,14 +307,334 @@
         }
 
         function viewDetails(productId) {
-            alert('Product details page will be implemented next! Product ID: ' + productId);
+            // Find the product data
+            let product = productsData.find(p => p.id == productId);
+            
+            // If products data not loaded yet, try to fetch it first
+            if (!product && productsData.length === 0) {
+                loadProductsData();
+                // Use a fallback product data structure
+                product = createFallbackProduct(productId);
+            }
+            
+            if (!product) {
+                showNotification('&#10060; Product not found', 'error');
+                return;
+            }
+            
+            // Populate modal with product details (with safe checks)
+            document.getElementById('modalProductName').textContent = product.name || 'Product Name';
+            document.getElementById('modalProductPrice').textContent = '$' + (product.price || '0.00');
+            document.getElementById('modalProductDescription').textContent = product.description || 'No description available.';
+            document.getElementById('modalProductCategory').textContent = product.category || 'General';
+            document.getElementById('modalProductStock').textContent = product.stock || '0';
+            
+            // Set product image (use simple placeholder if no image)
+            const modalImage = document.getElementById('modalProductImage');
+            const productName = product.name || 'Product';
+            
+            // Check if product has a valid, accessible image URL
+            if (product.imageUrl && product.imageUrl.startsWith('http')) {
+                // Test if the image URL is accessible before setting it
+                const testImg = new Image();
+                testImg.onload = function() {
+                    modalImage.src = product.imageUrl;
+                };
+                testImg.onerror = function() {
+                    // If image fails to load, use canvas placeholder
+                    createCanvasPlaceholder(modalImage, productName);
+                };
+                testImg.src = product.imageUrl;
+            } else {
+                // Use canvas placeholder for no image
+                createCanvasPlaceholder(modalImage, productName);
+            }
+            
+            modalImage.alt = productName;
+            
+            // Populate features based on product category and details
+            const featuresContainer = document.getElementById('modalProductFeatures');
+            const specsContainer = document.getElementById('modalProductSpecs');
+            
+            // Clear previous content
+            featuresContainer.innerHTML = '';
+            specsContainer.innerHTML = '';
+            
+            // Generate features and specs based on product type
+            const features = getProductFeatures(product);
+            const specs = getProductSpecs(product);
+            
+            // Add features
+            features.forEach(feature => {
+                const li = document.createElement('li');
+                li.innerHTML = '<i class="fas fa-check text-success me-2"></i>' + feature;
+                li.className = 'mb-1';
+                featuresContainer.appendChild(li);
+            });
+            
+            // Add specifications
+            Object.entries(specs).forEach(([key, value]) => {
+                const specDiv = document.createElement('div');
+                specDiv.innerHTML = '<strong>' + key + ':</strong> ' + value;
+                specDiv.className = 'mb-1';
+                specsContainer.appendChild(specDiv);
+            });
+            
+            // Update add to cart button in modal
+            const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
+            modalAddToCartBtn.onclick = () => {
+                const originalText = modalAddToCartBtn.innerHTML;
+                const originalClass = modalAddToCartBtn.className;
+                
+                // Call addToCart function
+                addToCart(productId, modalAddToCartBtn);
+                
+                // Show success state in modal button
+                modalAddToCartBtn.innerHTML = '<i class="fas fa-check"></i> Added!';
+                modalAddToCartBtn.className = 'btn btn-success';
+                modalAddToCartBtn.disabled = true;
+                
+                // Close modal after showing success
+                setTimeout(() => {
+                    closeModal();
+                    // Reset button state for next time
+                    modalAddToCartBtn.innerHTML = originalText;
+                    modalAddToCartBtn.className = originalClass;
+                    modalAddToCartBtn.disabled = false;
+                }, 1500); // Wait 1.5 seconds to show success message, then close
+            };
+            
+            // Disable button if out of stock
+            if (product.stock <= 0) {
+                modalAddToCartBtn.disabled = true;
+                modalAddToCartBtn.innerHTML = '<i class="fas fa-times"></i> Out of Stock';
+                modalAddToCartBtn.className = 'btn btn-danger';
+            } else {
+                modalAddToCartBtn.disabled = false;
+                modalAddToCartBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> Add to Cart';
+                modalAddToCartBtn.className = 'btn btn-primary';
+            }
+            
+            // Show the modal and set up close handlers
+            const modalElement = document.getElementById('productDetailsModal');
+            
+            // Always set up close button handlers
+            const closeButtons = modalElement.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
+            closeButtons.forEach(btn => {
+                btn.onclick = function(e) {
+                    e.preventDefault();
+                    closeModal();
+                };
+            });
+            
+            // Add keyboard support (Escape key)
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modalElement.classList.contains('show')) {
+                    closeModal();
+                }
+            });
+            
+            if (typeof bootstrap !== 'undefined') {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            } else {
+                // Fallback: show modal manually if Bootstrap JS not loaded
+                modalElement.style.display = 'block';
+                modalElement.classList.add('show');
+                modalElement.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+                
+                // Add backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'modal-backdrop fade show';
+                backdrop.id = 'modal-backdrop';
+                document.body.appendChild(backdrop);
+                
+                // Close on backdrop click
+                backdrop.onclick = function() {
+                    closeModal();
+                };
+            }
+        }
+        
+        function closeModal() {
+            const modalElement = document.getElementById('productDetailsModal');
+            
+            // Try Bootstrap modal first
+            if (typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                    return;
+                }
+            }
+            
+            // Fallback manual close
+            const backdrop = document.getElementById('modal-backdrop');
+            
+            modalElement.style.display = 'none';
+            modalElement.classList.remove('show');
+            modalElement.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('modal-open');
+            
+            if (backdrop) {
+                backdrop.remove();
+            }
+        }
+        
+        function createCanvasPlaceholder(imageElement, productName) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 300;
+            canvas.height = 200;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw background
+            ctx.fillStyle = '#6c757d';
+            ctx.fillRect(0, 0, 300, 200);
+            
+            // Draw text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('No Image', 150, 100);
+            
+            imageElement.src = canvas.toDataURL();
+        }
+        
+        function getProductFeatures(product) {
+            const features = [];
+            
+            // Safe category check
+            const category = product && product.category ? product.category.toLowerCase() : 'general';
+            
+            switch(category) {
+                case 'electronics':
+                    const productName = product && product.name ? product.name.toLowerCase() : '';
+                    if (productName.includes('smartphone')) {
+                        features.push('High-resolution display');
+                        features.push('Advanced camera system');
+                        features.push('Fast charging capability');
+                        features.push('Water-resistant design');
+                        features.push('Latest operating system');
+                    } else if (productName.includes('laptop')) {
+                        features.push('High-performance processor');
+                        features.push('Full HD display');
+                        features.push('Long battery life');
+                        features.push('Lightweight and portable');
+                        features.push('Multiple connectivity options');
+                    }
+                    break;
+                case 'clothing':
+                    features.push('Premium quality fabric');
+                    features.push('Comfortable fit');
+                    features.push('Machine washable');
+                    features.push('Durable construction');
+                    features.push('Available in multiple sizes');
+                    break;
+                case 'books':
+                    features.push('Comprehensive coverage');
+                    features.push('Easy to understand examples');
+                    features.push('Updated content');
+                    features.push('Practical exercises');
+                    features.push('Expert author');
+                    break;
+                case 'home & garden':
+                    features.push('Durable materials');
+                    features.push('Easy to use');
+                    features.push('Weather resistant');
+                    features.push('Complete set included');
+                    features.push('Ergonomic design');
+                    break;
+                default:
+                    features.push('High quality construction');
+                    features.push('Excellent value for money');
+                    features.push('Reliable performance');
+                    features.push('Customer satisfaction guaranteed');
+            }
+            
+            return features;
+        }
+        
+        function getProductSpecs(product) {
+            const specs = {};
+            
+            // Safe category and name checks
+            const category = product && product.category ? product.category.toLowerCase() : 'general';
+            const productName = product && product.name ? product.name.toLowerCase() : '';
+            
+            switch(category) {
+                case 'electronics':
+                    if (productName.includes('smartphone')) {
+                        specs['Display'] = '6.1" Super Retina XDR';
+                        specs['Storage'] = '128GB / 256GB / 512GB';
+                        specs['Camera'] = '12MP Triple Camera System';
+                        specs['Battery'] = 'Up to 17 hours video playback';
+                        specs['OS'] = 'Latest iOS';
+                    } else if (productName.includes('laptop')) {
+                        specs['Processor'] = 'Intel Core i7 / AMD Ryzen 7';
+                        specs['RAM'] = '16GB DDR4';
+                        specs['Storage'] = '512GB SSD';
+                        specs['Display'] = '15.6" Full HD IPS';
+                        specs['Graphics'] = 'Integrated / Dedicated GPU';
+                    }
+                    break;
+                case 'clothing':
+                    specs['Material'] = '100% Cotton Denim';
+                    specs['Fit'] = 'Classic / Slim / Regular';
+                    specs['Care'] = 'Machine wash cold';
+                    specs['Origin'] = 'Made with premium materials';
+                    break;
+                case 'books':
+                    specs['Pages'] = '400-500 pages';
+                    specs['Publisher'] = 'Tech Publications';
+                    specs['Language'] = 'English';
+                    specs['Format'] = 'Paperback / Hardcover';
+                    break;
+                case 'home & garden':
+                    specs['Material'] = 'Stainless Steel / Carbon Steel';
+                    specs['Set Includes'] = 'Multiple tools and accessories';
+                    specs['Warranty'] = '2 year manufacturer warranty';
+                    specs['Weight'] = 'Lightweight design';
+                    break;
+            }
+            
+            specs['SKU'] = 'TECH-' + product.id.toString().padStart(4, '0');
+            specs['Availability'] = product.stock > 0 ? 'In Stock' : 'Out of Stock';
+            
+            return specs;
+        }
+        
+        function createFallbackProduct(productId) {
+            // Create a basic product structure from the DOM if API data not available
+            const productCards = document.querySelectorAll('.card');
+            for (let card of productCards) {
+                const button = card.querySelector('button[onclick*="viewDetails(' + productId + ')"]');
+                if (button) {
+                    const name = card.querySelector('.card-title')?.textContent || 'Product';
+                    const price = card.querySelector('.text-success')?.textContent?.replace('$', '') || '0';
+                    const category = card.querySelector('.badge')?.textContent || 'General';
+                    const stockText = card.querySelector('.text-muted')?.textContent || 'Stock: 0';
+                    const stock = stockText.match(/\d+/)?.[0] || '0';
+                    
+                    return {
+                        id: productId,
+                        name: name,
+                        price: price,
+                        description: 'Detailed product information will be available soon.',
+                        category: category,
+                        stock: parseInt(stock),
+                        imageUrl: null
+                    };
+                }
+            }
+            return null;
         }
 
         function showNotification(message, type) {
             // Create notification element
             const notification = document.createElement('div');
             notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
-            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
             notification.innerHTML = `
                 ${message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -335,12 +659,28 @@
             }
         }
 
-        // Load cart count on page load for logged-in users
+        // Load cart count and products data on page load
         document.addEventListener('DOMContentLoaded', function() {
+            loadProductsData();
             if (isLoggedIn && authToken) {
                 loadCartCount();
             }
         });
+        
+        function loadProductsData() {
+            fetch('http://localhost:8080/ecommerce-backend/api/products')
+            .then(response => response.json())
+            .then(data => {
+                if (data && Array.isArray(data)) {
+                    productsData = data;
+                } else {
+                    console.error('Invalid products data received');
+                }
+            })
+            .catch(error => {
+                console.error('Error loading products data:', error);
+            });
+        }
 
         function loadCartCount() {
             fetch('http://localhost:8080/ecommerce-backend/api/simplecart/count', {
@@ -361,5 +701,62 @@
             });
         }
     </script>
+
+    <!-- Product Details Modal -->
+    <div class="modal fade" id="productDetailsModal" tabindex="-1" aria-labelledby="productDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productDetailsModalLabel">Product Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <img id="modalProductImage" src="" alt="" class="img-fluid rounded mb-3" style="width: 100%; max-height: 300px; object-fit: cover;">
+                        </div>
+                        <div class="col-md-6">
+                            <h4 id="modalProductName" class="text-primary mb-3"></h4>
+                            <div class="mb-3">
+                                <h5 class="text-success" id="modalProductPrice"></h5>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Category:</strong> <span id="modalProductCategory" class="badge bg-secondary ms-2"></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Stock Available:</strong> <span id="modalProductStock" class="text-info fw-bold"></span> units
+                            </div>
+                            <div class="mb-4">
+                                <h6>Description:</h6>
+                                <p id="modalProductDescription" class="text-muted"></p>
+                            </div>
+                            
+                            <!-- Product Features -->
+                            <div class="mb-4">
+                                <h6>Key Features:</h6>
+                                <ul id="modalProductFeatures" class="list-unstyled">
+                                    <!-- Features will be populated dynamically -->
+                                </ul>
+                            </div>
+                            
+                            <!-- Product Specifications -->
+                            <div class="mb-4">
+                                <h6>Specifications:</h6>
+                                <div id="modalProductSpecs" class="small text-muted">
+                                    <!-- Specifications will be populated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="modalAddToCartBtn">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
