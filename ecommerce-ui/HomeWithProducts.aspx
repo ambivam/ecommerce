@@ -13,6 +13,26 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
+    <%
+    // Check if user is logged in for navigation
+    bool isUserLoggedIn = false;
+    string userFirstName = "";
+    try
+    {
+        if (Session["UserInfo"] != null && Session["AuthToken"] != null)
+        {
+            var navSerializer = new JavaScriptSerializer();
+            var navUserInfo = navSerializer.Deserialize<dynamic>(Session["UserInfo"].ToString());
+            userFirstName = navUserInfo["firstName"];
+            isUserLoggedIn = true;
+        }
+    }
+    catch (Exception)
+    {
+        isUserLoggedIn = false;
+    }
+    %>
+
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
             <a class="navbar-brand" href="/ecommerce-ui/">TechMart</a>
@@ -21,7 +41,21 @@
                     <a class="nav-link" href="ProductsWorking.aspx">Products</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="LoginWorking.aspx">Login</a>
+                    <% if (isUserLoggedIn) { %>
+                        <a class="nav-link" href="UserDashboardSimple.aspx">My Dashboard</a>
+                    <% } %>
+                </li>
+                <li class="nav-item">
+                    <% if (isUserLoggedIn) { %>
+                        <span class="navbar-text text-light me-3">Welcome, <%= userFirstName %>!</span>
+                    <% } %>
+                </li>
+                <li class="nav-item">
+                    <% if (isUserLoggedIn) { %>
+                        <a class="nav-link" href="Logout.aspx">Logout</a>
+                    <% } else { %>
+                        <a class="nav-link" href="LoginWorking.aspx">Login</a>
+                    <% } %>
                 </li>
             </ul>
         </div>
