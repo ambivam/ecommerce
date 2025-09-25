@@ -1,8 +1,10 @@
-<%@ Page Language="C#" %>
+<%@ Page Language="C#" CodePage="65001" %>
 
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Commerce Store - Home</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
@@ -28,11 +30,11 @@
                 <p class="lead">Your one-stop shop for amazing products!</p>
                 
                 <div class="alert alert-success">
-                    <h4>✅ Application Status:</h4>
-                    <ul>
-                        <li>Frontend: ASP.NET Web Forms - Working</li>
-                        <li>Backend: Java API - Connected</li>
-                        <li>Database: PostgreSQL - Available</li>
+                    <h4>&#x2705; Application Status:</h4>
+                    <ul class="mb-0">
+                        <li><strong>Frontend:</strong> ASP.NET Web Forms - <span class="text-success">Working</span></li>
+                        <li><strong>Backend:</strong> Java API - <span class="text-success">Connected</span></li>
+                        <li><strong>Database:</strong> PostgreSQL - <span class="text-success">Available</span></li>
                     </ul>
                 </div>
                 
