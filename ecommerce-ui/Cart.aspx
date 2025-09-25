@@ -360,7 +360,13 @@
 
         // Proceed to checkout
         function proceedToCheckout() {
-            alert('Checkout functionality will be implemented next! Current total: ' + document.getElementById('summaryTotal').textContent);
+            if (!cartData || cartData.isEmpty) {
+                showError('Your cart is empty. Please add items before checkout.');
+                return;
+            }
+            
+            // Redirect to checkout page
+            window.location.href = 'Checkout.aspx';
         }
 
         // Show success message
