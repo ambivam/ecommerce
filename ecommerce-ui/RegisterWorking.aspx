@@ -3,19 +3,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register - E-Commerce Store</title>
+    <title>Register - TechMart</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="/ecommerce-ui/">E-Commerce Store</a>
+            <a class="navbar-brand" href="/ecommerce-ui/">TechMart</a>
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="/ecommerce-ui/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="ProductsSimple.aspx">Products</a>
+                    <a class="nav-link" href="ProductsWorking.aspx">Products</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="LoginWorking.aspx">Login</a>
@@ -76,7 +76,7 @@
                                         string url = "http://localhost:8080/ecommerce-backend/api/users/register";
                                         string response = client.UploadString(url, "POST", json);
                                         
-                                        message = "Account created successfully! <a href='LoginSimple.aspx'>Click here to login</a>";
+                                        message = "Account created successfully! <a href='LoginWorking.aspx'>Click here to login</a>";
                                         messageClass = "alert-success";
                                     }
                                 }
