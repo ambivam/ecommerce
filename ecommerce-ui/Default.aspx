@@ -217,8 +217,62 @@
     <script type="text/javascript">
         // Add to cart functionality
         function addToCart(productId) {
+            // Check if user is logged in first
+            if (!isUserLoggedIn()) {
+                showLoginRequiredModal();
+                return;
+            }
+            
             // This would typically make an AJAX call to add the product to cart
             PageMethods.AddToCart(productId, 1, onAddToCartSuccess, onAddToCartError);
+        }
+        
+        function isUserLoggedIn() {
+            // Check if user menu is visible (indicates logged in user)
+            var userMenu = document.getElementById('<%= userMenu.ClientID %>');
+            return userMenu && userMenu.style.display !== 'none';
+        }
+        
+        function showLoginRequiredModal() {
+            // Create modal HTML
+            var modalHtml = `
+                <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="loginRequiredModalLabel">
+                                    <i class="fas fa-sign-in-alt text-primary"></i> Login Required
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                <h6>Please log in to add items to your cart</h6>
+                                <p class="text-muted">You need to be logged in to start shopping and add items to your cart.</p>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <a href="LoginWorking.aspx" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> Login Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            var existingModal = document.getElementById('loginRequiredModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            var modal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+            modal.show();
         }
         
         function onAddToCartSuccess(result) {

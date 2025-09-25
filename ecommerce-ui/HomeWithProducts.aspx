@@ -147,12 +147,12 @@
                                                     <small class='text-muted'>Stock: {3}</small>
                                                 </div>
                                                 <div class='mt-2'>
-                                                    <button class='btn btn-primary btn-sm'>Add to Cart</button>
+                                                    <button class='btn btn-primary btn-sm' onclick='addToCart({4})'>Add to Cart</button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                ", product["name"], product["description"], product["price"], product["stockQuantity"]);
+                                ", product["name"], product["description"], product["price"], product["stockQuantity"], product["id"]);
                             }
                             productsHtml += "</div>";
                         }
@@ -192,5 +192,64 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let isLoggedIn = <%= isUserLoggedIn.ToString().ToLower() %>;
+        
+        function addToCart(productId) {
+            if (!isLoggedIn) {
+                showLoginRequiredModal();
+                return;
+            }
+            
+            // If logged in, proceed with adding to cart
+            // This would typically make an API call to add the product to cart
+            alert('Product added to cart! (This would be implemented with actual cart functionality)');
+        }
+        
+        function showLoginRequiredModal() {
+            // Create modal HTML
+            const modalHtml = `
+                <div class="modal fade" id="loginRequiredModal" tabindex="-1" aria-labelledby="loginRequiredModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="loginRequiredModalLabel">
+                                    <i class="fas fa-sign-in-alt text-primary"></i> Login Required
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                                <h6>Please log in to add items to your cart</h6>
+                                <p class="text-muted">You need to be logged in to start shopping and add items to your cart.</p>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <a href="LoginWorking.aspx" class="btn btn-primary">
+                                    <i class="fas fa-sign-in-alt"></i> Login Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('loginRequiredModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to page
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+            modal.show();
+        }
+    </script>
 </body>
 </html>
