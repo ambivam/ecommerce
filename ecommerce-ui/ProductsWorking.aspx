@@ -45,6 +45,16 @@
                         <a class="nav-link" href="/ecommerce-ui/">Home</a>
                     <% } %>
                 </li>
+                <% if (isUserLoggedIn) { %>
+                <li class="nav-item">
+                    <a class="nav-link position-relative" href="Cart.aspx">
+                        &#128722; Cart
+                        <span id="cartCounter" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                            0
+                        </span>
+                    </a>
+                </li>
+                <% } %>
                 <li class="nav-item">
                     <% if (isUserLoggedIn) { %>
                         <span class="navbar-text text-light me-3">Welcome, <%= userFirstName %>!</span>
@@ -225,12 +235,130 @@
     </div>
 
     <script>
+        const authToken = '<%= Session["AuthToken"] != null ? Session["AuthToken"].ToString() : "" %>';
+        const isLoggedIn = '<%= isUserLoggedIn.ToString().ToLower() %>' === 'true';
+
         function addToCart(productId) {
-            alert('Product ' + productId + ' added to cart! (Cart functionality will be implemented next)');
+            if (!isLoggedIn) {
+                alert('Please login to add items to cart');
+                window.location.href = 'LoginWorking.aspx';
+                return;
+            }
+
+            if (!authToken) {
+                alert('Authentication required. Please login again.');
+                window.location.href = 'LoginWorking.aspx';
+                return;
+            }
+
+            // Show loading state
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Adding...';
+            button.disabled = true;
+
+            fetch('http://localhost:8080/ecommerce-backend/api/simplecart/add', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    productId: productId,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+
+                if (data.success) {
+                    // Show success message
+                    showNotification('&#10004; Item added to cart successfully!', 'success');
+                    
+                    // Update cart counter if it exists
+                    updateCartCounter(data.cartItemCount);
+                    
+                    // Change button temporarily
+                    button.innerHTML = '&#10004; Added!';
+                    button.classList.remove('btn-primary');
+                    button.classList.add('btn-success');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('btn-success');
+                        button.classList.add('btn-primary');
+                    }, 2000);
+                } else {
+                    showNotification('&#10060; ' + (data.error || 'Failed to add item to cart'), 'error');
+                }
+            })
+            .catch(error => {
+                button.innerHTML = originalText;
+                button.disabled = false;
+                console.error('Error adding to cart:', error);
+                showNotification('&#10060; Failed to add item to cart. Please check if the backend is running.', 'error');
+            });
         }
 
         function viewDetails(productId) {
-            alert('Viewing details for product ' + productId + ' (Details page will be implemented next)');
+            alert('Product details page will be implemented next! Product ID: ' + productId);
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 1050; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 4000);
+        }
+
+        function updateCartCounter(count) {
+            // Update cart counter in navigation if it exists
+            const cartCounter = document.getElementById('cartCounter');
+            if (cartCounter) {
+                cartCounter.textContent = count;
+                cartCounter.style.display = count > 0 ? 'inline' : 'none';
+            }
+        }
+
+        // Load cart count on page load for logged-in users
+        document.addEventListener('DOMContentLoaded', function() {
+            if (isLoggedIn && authToken) {
+                loadCartCount();
+            }
+        });
+
+        function loadCartCount() {
+            fetch('http://localhost:8080/ecommerce-backend/api/simplecart/count', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + authToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartCounter(data.count);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cart count:', error);
+            });
         }
     </script>
 </body>

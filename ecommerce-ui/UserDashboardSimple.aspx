@@ -53,6 +53,14 @@
                     <a class="nav-link" href="ProductsWorking.aspx">All Products</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link position-relative" href="Cart.aspx">
+                        &#128722; Cart
+                        <span id="cartCounter" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;">
+                            0
+                        </span>
+                    </a>
+                </li>
+                <li class="nav-item">
                     <span class="navbar-text text-light me-3">Welcome, <%= userName.Split(' ')[0] %>!</span>
                 </li>
                 <li class="nav-item">
