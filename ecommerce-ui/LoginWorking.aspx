@@ -71,9 +71,9 @@
                                         
                                         // Store in session (in production, use secure storage)
                                         Session["AuthToken"] = loginResult["token"];
-                                        Session["UserInfo"] = loginResult["user"];
+                                        Session["UserInfo"] = serializer.Serialize(loginResult["user"]);
                                         
-                                        message = string.Format("Login successful! Welcome {0}! <a href='/ecommerce-ui/'>Go to Homepage</a>", 
+                                        message = string.Format("Login successful! Welcome {0}! <a href='UserDashboardSimple.aspx'>Go to My Dashboard</a>", 
                                                               loginResult["user"]["firstName"]);
                                         messageClass = "alert-success";
                                     }
